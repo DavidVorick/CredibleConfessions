@@ -1,7 +1,11 @@
 // Establish a global array with the full list of authors.
 const authors = []
 
-// TODO: Replace all alerts with DOM messages
+// TODO: Add a delete function for authors
+
+// TODO: save the authors instead of just the message
+
+// TODO: Wipe localstorage when the message is published
 
 // clearAddAuthorErr will clear the error in the addAuthor section of the page.
 function clearAddAuthorErr() {
@@ -107,6 +111,7 @@ async function addAuthor() {
     authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000"
     authorDiv.appendChild(avatarImg)
     authorDiv.appendChild(nameDiv)
+    authorDiv.id = ("githubAuthor"+username) // TODO: This is useful when deleting authors
 
     // Add the DOM for the new author.
     const authorsDiv = document.getElementById("authors")
@@ -153,12 +158,10 @@ async function publishMessage() {
       secretKey: sigOrKey,
     })
     if (proofResponse.proof[1] !== "") {
-      // TODO: Make it a DOM error message.
-      alert("unable to sign message: "+proofResponse.proof[1])
+      setPublishError(`unable to sign message: ${proofResponse.proof[1]}`)
       return
     }
     proof = proofResponse.proof[0]
-    alert(proof)
   } else {
     proof = sigOrKey
   }
@@ -173,10 +176,16 @@ async function publishMessage() {
   const isValidProof = isValidProofResp.isValidProof
   if (isValidProof !== "") {
     console.log(isValidProof)
-    alert("message is not valid: "+isValidProof)
+    setPublishError(`proof is not valid: ${isValidProof}`)
     return
   }
-  alert("message is valid")
+
+  setPublishError("")
+}
+
+// Define a helper function to set the publish error.
+async function setPublishError(message) {
+  document.getElementById("publishError").innerHTML = message
 }
 
 // Establish the promise that will launch the webworker. We launch the worker
@@ -214,4 +223,28 @@ function handleWorkerMessage(event) {
   const nonce = event.data.nonce
   activeQueries[nonce](event.data)
   delete activeQueries[nonce]
+}
+
+// saveMessage will save the written message to local storage every few
+// seconds.
+function saveMessage() {
+  const message = document.getElementById("message").value
+  localStorage.setItem("message", message)
+  setTimeout(saveMessage, 15000)
+}
+
+// Do things after DOM has finished loading.
+window.addEventListener("load", () => {
+  // Load any saved messages.
+  const savedMessage = localStorage.getItem("message")
+  document.getElementById("message").value = savedMessage
+
+  // Kick off the loop to save every 15 seconds.
+  setTimeout(saveMessage, 15000)
+})
+
+// Try to save before unloading the page.
+window.onbeforeunload = () => {
+  const message = document.getElementById("message").value
+  localStorage.setItem("message", message)
 }
