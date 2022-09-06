@@ -47,11 +47,13 @@ pub fn verify(proof: &[u8], pks: &[PublicKey], message: &[u8]) -> Result<(), &'s
         return Err("no public keys");
     }
 
+    let mut pks = pks.to_owned();
+    pks.sort_by_key(|pk| pk.serialize());
     if proof.len() != 32 * (pks.len() + 1) {
         return Err("proof wrong length");
     }
 
-    let params = param_hash(pks, message);
+    let params = param_hash(&pks, message);
     let mut e_i = ChallengeHash::from_slice(&proof[..32]).unwrap();
     for idx in 0..pks.len() {
         let s_i = NonceHash::from_slice(&proof[32 * (idx + 1)..32 * (idx + 2)]).unwrap();
@@ -69,7 +71,9 @@ pub fn verify(proof: &[u8], pks: &[PublicKey], message: &[u8]) -> Result<(), &'s
 }
 
 pub fn prove(pks: &[PublicKey], message: &[u8], sk: SecretKey) -> Result<Vec<u8>, &'static str> {
-    let params = param_hash(pks, message);
+    let mut pks = pks.to_owned();
+    pks.sort_by_key(|pk| pk.serialize());
+    let params = param_hash(&pks, message);
     let my_pk = sk.to_public();
     let my_idx = match pks.iter().position(|&pk| pk == my_pk) {
         Some(idx) => idx,
@@ -146,7 +150,7 @@ mod tests {
     #[test]
     fn empty_proof() {
         let proof = b"32 bytes32 bytes32 bytes32 bytes";
-        assert!(verify(&proof, &[pk], b"Goodbye, world!").is_err());
+        assert!(verify(&proof[..], &[], b"Goodbye, world!").is_err());
     }
 
     #[test]
@@ -173,8 +177,9 @@ mod tests {
 
         assert!(verify(&proof, &keys, b"Goodbye, world!").is_err()); // wrong message
         assert!(verify(&proof[..keys.len() - 1], &keys, b"Hello, world!").is_err()); // not enough keys
+        // Key ordering does not matter
         keys.swap(0, 1);
-        assert!(verify(&proof, &keys, b"Hello, world!").is_err()); // keys swapped
+        verify(&proof, &keys, b"Hello, world!").unwrap();
     }
 
     #[test]
