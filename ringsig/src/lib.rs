@@ -43,6 +43,10 @@ fn hash_to_sc<T: Hash<Inner = [u8; 32]>>(inp: T) -> Scalar {
 }
 
 pub fn verify(proof: &[u8], pks: &[PublicKey], message: &[u8]) -> Result<(), &'static str> {
+    if pks.is_empty() {
+        return Err("no public keys");
+    }
+
     if proof.len() != 32 * (pks.len() + 1) {
         return Err("proof wrong length");
     }
@@ -136,6 +140,12 @@ mod tests {
         let pk = sk1.to_public();
         let proof = prove(&[pk], b"Hello, world!", sk1).unwrap();
         verify(&proof, &[pk], b"Hello, world!").unwrap();
+        assert!(verify(&proof, &[pk], b"Goodbye, world!").is_err());
+    }
+
+    #[test]
+    fn empty_proof() {
+        let proof = b"32 bytes32 bytes32 bytes32 bytes";
         assert!(verify(&proof, &[pk], b"Goodbye, world!").is_err());
     }
 
