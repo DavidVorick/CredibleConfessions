@@ -1,0 +1,88 @@
+<html>
+
+<!-- Generic metadata and stylesheet -->
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<!-- Overall structure for the app -->
+<body style="width: 100%">
+  <!-- we need the script here for dom manipulation -->
+  <!-- it's lightweight, not going to impact loading too much -->
+  <script src="./index.js"></script>
+
+  <!-- Define the header div -->
+  <div style="background: #CCCCCC; width: 100%">
+    <center>
+      <p style="padding-top: 20px; font-size: 32px">Write a Credible Confession</p>
+      <p style="padding-bottom: 20px; padding-top: 20px"><a href="https://google.com">(how it works)</a></p>
+    </center>
+  </div>
+
+  <!-- Define the body div -->
+  <div style="width: 100%; display: flex">
+    <!-- Define the authos div -->
+    <div style="width: 360px; float: left; background: #CCDDCC">
+      <!-- Define the author title div -->
+      <div style="width: 100%; border-bottom: thin solid #000000">
+        <center>
+          <p style="font-size: 24px; margin: 20px">Authors</p>
+        </center>
+      </div>
+      <!-- Define the div that holds the authors -->
+      <div id="authors" style="width: 100%">
+      </div>
+      <!-- Define the div that holds the addAuthor button -->
+      <div style="width: 100%">
+        <center>
+          <input type="text" id="addAuthorText" />
+          <button style="margin-left: 20px; margin-top: 30px" onclick="addAuthor()">Add Author</button>
+        </center>
+        <!-- Create space to present a warning -->
+        <p id="addAuthorError" style="color: #D50000; padding: 20px; padding-left: 10px"></p>
+      </div>
+    </div>
+
+    <!-- Define the writing div -->
+    <div style="width: calc(100% - 360px); float: right; background: #DDCCCC">
+      <!-- Define the title div -->
+      <div style="width: 100%">
+        <p style="padding-left: 30px; padding-top: 10px">Write your confession:</p>
+      </div>
+      <!-- Define the main text div -->
+      <div style="width: 100%">
+        <center>
+          <textarea class="writing" id="message" style="height: 300px; min-height: 80px"></textarea>
+        </center>
+      </div>
+      <!-- Define the key title div -->
+      <div style="width: 100%">
+        <p class="writing">Add your private key or signature: &nbsp;
+          <a onclick=getSignInfo href="javascript:void(0)">(click here for the data to sign)</a>
+        </p>
+      </div>
+      <!-- Define the text area div -->
+      <div style="width: 100%">
+        <center>
+          <textarea class="writing"  id="sigOrKey" style="height: 80px; min-height: 30px"></textarea>
+        </center>
+      </div>
+      <!-- Define the publish button div -->
+      <div style="width: 100%">
+        <center>
+          <button onclick=getSignInfo style="margin-bottom: 20px">Publish</button>
+        </center>
+      </div>
+    </div>
+  </div>
+
+  <!-- Define the footer div -->
+  <div style="width: 100%; background: #CCCCDD">
+    <center>
+      <p style="padding: 20px">Socials</p>
+    </center>
+  </div>
+</body>
+
+</html>

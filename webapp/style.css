@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+}
+
+a {
+  target="_blank";
+  rel="noopener noreferrer";
+}
+
+p {
+  margin: 0;
+}
+
+textarea.writing {
+  margin: 20px;
+  width: calc(100% - 120px);
+  min-width: 240px;
+}
+
+p.writing {
+  padding-left: 30px;
+}

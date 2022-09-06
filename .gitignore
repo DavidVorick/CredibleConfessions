@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 *.swo
 *.swp
+=======
+target/
+>>>>>>> eaaec1921fa7de384c348370d7e40452e9c32ac9
