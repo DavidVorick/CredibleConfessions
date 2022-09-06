@@ -16,7 +16,7 @@
 
 use wasm_bindgen::prelude::*;
 
-use bitcoin_hashes::hex::ToHex;
+use bitcoin_hashes::hex::{FromHex, ToHex};
 use crate::armor::FromArmor;
 use crate::keys::{PublicKey, SecretKey};
 
@@ -65,4 +65,15 @@ pub fn prove(
     }
     ret
 }
+
+#[wasm_bindgen]
+pub fn is_secret_key(data: &str) -> bool {
+    SecretKey::from_armor(data).is_ok()
+}
+
+#[wasm_bindgen]
+pub fn is_proof(data: &str) -> bool {
+    data.len() % 32 == 0 && Vec::<u8>::from_hex(data).is_ok()
+}
+
 
