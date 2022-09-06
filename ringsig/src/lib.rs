@@ -18,6 +18,7 @@ pub mod armor;
 pub mod hashes;
 pub mod keys;
 pub mod radix64;
+pub mod wasm;
 
 use bitcoin_hashes::{Hash, HashEngine};
 use curve25519_dalek::{constants, edwards::EdwardsPoint, scalar::Scalar};
@@ -119,10 +120,6 @@ fn prove(pks: &[PublicKey], message: &[u8], sk: SecretKey) -> Result<Vec<u8>, &'
 
     Ok(ret)
 }
-
-fn main() {
-}
-
 
 #[cfg(test)]
 mod tests {
