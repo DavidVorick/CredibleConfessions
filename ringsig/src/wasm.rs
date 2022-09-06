@@ -25,7 +25,6 @@ pub fn prove_internal(
     msg: &str,
     sk: &str,
 ) -> Result<String, String> {
-
     let pks = pks
         .iter()
         .map(|key| PublicKey::parse_pk_line(key))
@@ -64,6 +63,42 @@ pub fn prove(
         },
     }
     ret
+}
+
+pub fn verify_internal(
+    proof: &str,
+    pks: &[String],
+    msg: &str,
+) -> Result<(), String> {
+    let pks = pks
+        .iter()
+        .map(|key| PublicKey::parse_pk_line(key))
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("{:?}", e))?; // FIXME don't use debug
+
+    let proof = Vec::<u8>::from_hex(proof)
+        .map_err(|e| e.to_string())?;
+
+    crate::verify(&proof, &pks, msg.as_bytes())
+        .map_err(|e| e.to_owned())
+}
+
+/// Verifies a proof. Returns an error string. If the proof is good, returns the empty string.
+#[wasm_bindgen]
+pub fn verify(
+    proof: &str,
+    pks: js_sys::Array,
+    msg: &str,
+) -> String {
+    let pks_rust: Vec<String> = pks
+        .iter()
+        .map(|v| v.as_string().unwrap_or("js unknown".to_owned()))
+        .collect();
+
+    match verify_internal(proof, &pks_rust, msg) {
+        Ok(()) => "".to_owned(),
+        Err(e) => e,
+    }
 }
 
 #[wasm_bindgen]
