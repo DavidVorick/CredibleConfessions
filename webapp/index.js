@@ -23,6 +23,9 @@ function isDuplicateAuthor(newAuthor) {
   return false
 }
 
+// addAuthor is the function that adds an author to the state. It'll take the
+// username and find all the author details, including collecting the public
+// keys and updating the DOM to show the new author.
 async function addAuthor() {
   // Establish the key variables for the function.
   const username = document.getElementById("addAuthorText").value
@@ -113,4 +116,93 @@ async function addAuthor() {
     setAddAuthorErr(err)
     return
   }
+}
+
+// publishMessage will read the state of the confession, sign it, and then
+// publish it to Skynet.
+async function publishMessage() {
+  // Check whether the user has placed in a secret key or an already valid
+  // proof.
+  const sigOrKey = document.getElementById("sigOrKey").value
+  const worker = await getWorker
+  const isSecKeyResp = await postWorkerMessage({
+    method: "isSecretKey",
+    secretKey: sigOrKey,
+  })
+
+  // Get the message and set of public keys.
+  const message = document.getElementById("message").value
+  const publicKeys = []
+  for (let i = 0; i < authors.length; i++) {
+    const authorKeys = authors[i].keys
+    for (let j = 0; j < authorKeys.length; j++) {
+      publicKeys.push(authorKeys[j])
+    }
+  }
+
+  // We have a secret key. Send all the remaining data to the prover and get a
+  // proof.
+  let proof
+  if (isSecKeyResp.isSecretKey === true) {
+    proof = await postWorkerMessage({
+      method: "prove",
+      publicKeys,
+      message,
+      secretKey: sigOrKey,
+    })
+  } else {
+    proof = sigOrKey
+  }
+
+  alert(proof)
+  alert(publicKeys)
+  alert(message)
+
+  // Double check that the proof is correct.
+  const isValidProof = await postWorkerMessage({
+    method: "verify",
+    proof,
+    publicKeys,
+    message,
+  })
+
+  // TODO: Publish the final result somewhere (skynet probably)
+  alert("proof:", isValidProof)
+}
+
+// Establish the promise that will launch the webworker. We launch the worker
+// in a promise so that there's minimal delay when starting the app. When we
+// want to use the worker in a function, we need to grab it from the promise.
+const getWorker = new Promise((resolve) => {
+  const worker = new Worker("worker.js")
+  worker.onmessage = handleWorkerMessage
+  resolve(worker)
+})
+
+// postWorkerMessage is an abstraction around worker communications to make
+// simple query-response interactions painless.
+let workerNonce = 0
+let activeQueries = {}
+async function postWorkerMessage(messageData) {
+  // Get a unique nonce for this message.
+  const nonce = workerNonce
+  workerNonce += 1
+  messageData.nonce = nonce
+
+  // Send the message to the worker with the nonce.
+  const worker = await getWorker
+  worker.postMessage(messageData)
+
+  // Craft the promise that will be resolved by handleWorkerMessage when a
+  // response is received.
+  return await new Promise((resolve) => {
+    activeQueries[nonce] = resolve
+  })
+}
+
+// handleWorkerMessage will process any messages coming from the webworker.
+function handleWorkerMessage(event) {
+  const nonce = event.data.nonce
+  activeQueries[nonce](event.data)
+  delete activeQueries[nonce]
 }

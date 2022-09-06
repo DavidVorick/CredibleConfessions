@@ -4,6 +4,7 @@
 <head>
   <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
   <link rel="stylesheet" href="style.css">
+  <title>Write a Credible Confession</title>
 </head>
 
 <!-- Overall structure for the app -->
@@ -59,7 +60,7 @@
       <!-- Define the key title div -->
       <div style="width: 100%">
         <p class="writing">Add your private key or signature: &nbsp;
-          <a onclick=getSignInfo href="javascript:void(0)">(click here for the data to sign)</a>
+          <a onclick="getMessage()" href="javascript:void(0)">(click here for the data to sign)</a>
         </p>
       </div>
       <!-- Define the text area div -->
@@ -71,7 +72,7 @@
       <!-- Define the publish button div -->
       <div style="width: 100%">
         <center>
-          <button onclick=getSignInfo style="margin-bottom: 20px">Publish</button>
+          <button onclick="publishMessage()" style="margin-bottom: 20px">Publish</button>
         </center>
       </div>
     </div>
