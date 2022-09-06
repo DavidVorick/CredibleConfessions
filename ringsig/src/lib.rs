@@ -42,7 +42,7 @@ fn hash_to_sc<T: Hash<Inner = [u8; 32]>>(inp: T) -> Scalar {
     Scalar::from_bits(inp.into_inner())
 }
 
-fn verify(proof: &[u8], pks: &[PublicKey], message: &[u8]) -> Result<(), &'static str> {
+pub fn verify(proof: &[u8], pks: &[PublicKey], message: &[u8]) -> Result<(), &'static str> {
     if proof.len() != 32 * (pks.len() + 1) {
         return Err("proof wrong length");
     }
@@ -64,7 +64,7 @@ fn verify(proof: &[u8], pks: &[PublicKey], message: &[u8]) -> Result<(), &'stati
     Ok(())
 }
 
-fn prove(pks: &[PublicKey], message: &[u8], sk: SecretKey) -> Result<Vec<u8>, &'static str> {
+pub fn prove(pks: &[PublicKey], message: &[u8], sk: SecretKey) -> Result<Vec<u8>, &'static str> {
     let params = param_hash(pks, message);
     let my_pk = sk.to_public();
     let my_idx = match pks.iter().position(|&pk| pk == my_pk) {
