@@ -34,7 +34,10 @@ onmessage = async function(event) {
 
   // Check whether the caller wants to know whether the input is a valid proof.
   if (event.data.method === "verify") {
+    console.log("doing verification")
+    console.log(event.data)
     const isValidProof = verify(event.data.proof, event.data.publicKeys, event.data.message)
+    console.log(isValidProof)
     postMessage({
       isValidProof,
       nonce: event.data.nonce,

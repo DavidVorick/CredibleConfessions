@@ -1,6 +1,8 @@
 // Establish a global array with the full list of authors.
 const authors = []
 
+// TODO: Replace all alerts with DOM messages
+
 // clearAddAuthorErr will clear the error in the addAuthor section of the page.
 function clearAddAuthorErr() {
   document.getElementById("addAuthorError").innerHTML = ""
@@ -144,30 +146,37 @@ async function publishMessage() {
   // proof.
   let proof
   if (isSecKeyResp.isSecretKey === true) {
-    proof = await postWorkerMessage({
+    const proofResponse = await postWorkerMessage({
       method: "prove",
       publicKeys,
       message,
       secretKey: sigOrKey,
     })
+    if (proofResponse.proof[1] !== "") {
+      // TODO: Make it a DOM error message.
+      alert("unable to sign message: "+proofResponse.proof[1])
+      return
+    }
+    proof = proofResponse.proof[0]
+    alert(proof)
   } else {
     proof = sigOrKey
   }
 
-  alert(proof)
-  alert(publicKeys)
-  alert(message)
-
   // Double check that the proof is correct.
-  const isValidProof = await postWorkerMessage({
+  const isValidProofResp = await postWorkerMessage({
     method: "verify",
     proof,
     publicKeys,
     message,
   })
-
-  // TODO: Publish the final result somewhere (skynet probably)
-  alert("proof:", isValidProof)
+  const isValidProof = isValidProofResp.isValidProof
+  if (isValidProof !== "") {
+    console.log(isValidProof)
+    alert("message is not valid: "+isValidProof)
+    return
+  }
+  alert("message is valid")
 }
 
 // Establish the promise that will launch the webworker. We launch the worker
