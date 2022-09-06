@@ -23,12 +23,14 @@ use std::io::{BufRead, Read};
 
 fn usage() -> Result<(), &'static str> {
     let name = env::args().next().unwrap();
-    eprintln!("Usage: {} prove <public key list> [secret key file]", name);
-    eprintln!("Usage: {} verify <public key list> <proof>", name);
+    eprintln!("Usage: {} prove <public key list> <message file> [secret key file]", name);
+    eprintln!("Usage: {} verify <public key list> <message file> <proof>", name);
     eprintln!("");
     eprintln!("Here <public key list> should refer to a text file containing a list of");
     eprintln!("public keys, in the .ssh/authorized_keys format, one on each line.");
     eprintln!("public keys, in the .ssh/authorized_keys format, one on each line.");
+    eprintln!("");
+    eprintln!("<message file> is the message to sign. To use stdin, provide '-'.");
     eprintln!("");
     eprintln!("If <secret key file> is provided this will be used as the signing key.");
     eprintln!("Otherwise, the tool will just try to use every file in ~/.ssh as a key.");
@@ -46,8 +48,8 @@ fn main() -> Result<(), String> {
         usage()?;
     }
     match &args[1][..] {
-        "prove" if args.len() == 3 || args.len() == 4 => {},
-        "verify" if args.len() == 4 => {},
+        "prove" if args.len() == 4 || args.len() == 5 => {},
+        "verify" if args.len() == 5 => {},
         _ => usage()?,
     }
 
@@ -66,13 +68,22 @@ fn main() -> Result<(), String> {
         })
         .collect::<Result<Vec<_>, _>>()?;
 
+    // Obtain message
+    let mut msg = vec![];
+    let mut file: Box<dyn Read> = if args[2] == "-" {
+        Box::new(io::stdin())
+    } else {
+        Box::new(fs::File::open(&args[2]).map_err(|e| e.to_string())?)
+    };
+    file.read_to_end(&mut msg).map_err(|e| e.to_string())?;
+
     // Obtain secret key for proving
     if args[1] == "prove" {
         let sk;
-        if args.len() == 4 {
-            let sk_str = fs::read_to_string(&args[3]).map_err(|e| e.to_string())?;
+        if args.len() == 5 {
+            let sk_str = fs::read_to_string(&args[4]).map_err(|e| e.to_string())?;
             sk = SecretKey::from_armor(&sk_str)
-                .map_err(|e| format!("Reading secret key file {}: {:?}", args[3], e))?; // FIXME
+                .map_err(|e| format!("Reading secret key file {}: {:?}", args[4], e))?; // FIXME
         } else {
             let mut try_sk = None;
             let mut ssh_dir = match home_dir() {
@@ -92,9 +103,6 @@ fn main() -> Result<(), String> {
             }
         }
 
-        // Obtain message
-        let mut msg = vec![];
-        io::stdin().read_to_end(&mut msg).map_err(|e| e.to_string())?;
 
         // Do the proof
         let proof = ringsig::prove(&keys, &msg, sk)?;
@@ -103,7 +111,7 @@ fn main() -> Result<(), String> {
 
     // Obtain proof for verifying
     if args[1] == "verify" {
-        let proof = Vec::<u8>::from_hex(&args[3])
+        let proof = Vec::<u8>::from_hex(&args[4])
             .map_err(|e| e.to_string())?;
 
         // Obtain message
