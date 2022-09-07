@@ -1,9 +1,6 @@
 // Establish a global array with the full list of authors.
 const authors = []
 
-// TODO: Add some sort of indicator that the document is publishing after
-// clicking the publish button.
-
 // TODO: Add a delete function for authors
 
 // TODO: save the authors instead of just the message
@@ -149,8 +146,7 @@ async function publishMessage() {
     }
   }
 
-  // We have a secret key. Send all the remaining data to the prover and get a
-  // proof.
+  // Extract either the secret key or the proof.
   let proof
   if (isSecKeyResp.isSecretKey === true) {
     const proofResponse = await postWorkerMessage({
@@ -165,7 +161,9 @@ async function publishMessage() {
     }
     proof = proofResponse.proof[0]
   } else {
-    proof = sigOrKey
+    // Read the provided data as JSON.
+    const obj = JSON.parse(sigOrKey)
+    proof = obj.proof
   }
 
   // Double check that the proof is correct.
@@ -280,6 +278,7 @@ async function getSigningData() {
 
   // Create the signing data object.
   const signingData = JSON.stringify({
+    version: 1,
     publicKeys,
     message,
   })

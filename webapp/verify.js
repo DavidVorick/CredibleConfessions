@@ -107,7 +107,7 @@ function setMessageDOM(skylinkData) {
   // Set the read body. We need to escape the html in case there are any bad
   // characters, and then we need to replace all of the newlines with breaks so
   // that they get rendered inside of the 'p' object.
-  document.getElementById("readMessage").innerHTML = escapeHtml(skylinkData.message).replaceAll(/\n/g, "<br />")
+  document.getElementById("readMessage").innerHTML = escapeHtml(skylinkData.message).replaceAll(/\n\n/g, "<br /><br />")
 
   // Add all the authors to the DOM, and kick off async verification for each.
   const authors = skylinkData.authors
