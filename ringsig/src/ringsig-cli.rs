@@ -18,27 +18,32 @@ use bitcoin_hashes::hex::{FromHex, ToHex};
 use home::home_dir;
 use ringsig::armor::FromArmor;
 use ringsig::keys::{PublicKey, SecretKey};
+use serde::{Deserialize, Serialize};
+use serde_json;
 use std::{env, fs, io};
-use std::io::{BufRead, Read};
+use std::io::Read;
+
+#[derive(Clone, PartialEq, Eq, Deserialize, Serialize)]
+struct FileContents {
+    version: usize,
+    #[serde(rename = "publicKeys")]
+    pks: Vec<String>,
+    message: String,
+    proof: Option<String>,
+}
 
 fn usage() -> Result<(), &'static str> {
     let name = env::args().next().unwrap();
-    eprintln!("Usage: {} prove <public key list> <message file> [secret key file]", name);
-    eprintln!("Usage: {} verify <public key list> <message file> <proof>", name);
+    eprintln!("Usage: {} prove <json file> [secret key file]", name);
+    eprintln!("Usage: {} verify <json file> <proof>", name);
     eprintln!("");
-    eprintln!("Here <public key list> should refer to a text file containing a list of");
-    eprintln!("public keys, in the .ssh/authorized_keys format, one on each line.");
-    eprintln!("public keys, in the .ssh/authorized_keys format, one on each line.");
-    eprintln!("");
-    eprintln!("<message file> is the message to sign. To use stdin, provide '-'.");
+    eprintln!("Here <json file> is a text file containing a JSON object with the");
+    eprintln!("fields `publicKeys`, `message`, and (for verification) `proof`. If");
+    eprintln!("the filename provided is `-` then standard input will be used.");
     eprintln!("");
     eprintln!("If <secret key file> is provided this will be used as the signing key.");
-    eprintln!("Otherwise, the tool will just try to use every file in ~/.ssh as a key.");
-    eprintln!("");
-    eprintln!("<proof> is a hex-encoded proof");
-    eprintln!("");
-    eprintln!("The message to sign is then provided on standard input. Use < to read");
-    eprintln!("from a file instead.");
+    eprintln!("Otherwise, when proving, the tool will just try to use every file in");
+    eprintln!("~/.ssh as a key.");
     Err("invalid-command-line-args")
 }
 
@@ -48,42 +53,35 @@ fn main() -> Result<(), String> {
         usage()?;
     }
     match &args[1][..] {
-        "prove" if args.len() == 4 || args.len() == 5 => {},
-        "verify" if args.len() == 5 => {},
+        "prove" if args.len() == 3 || args.len() == 4 => {},
+        "verify" if args.len() == 3 => {},
         _ => usage()?,
     }
 
-    // Obtain list of public keys
-    let keyfile = fs::File::open(&args[2])
-        .map(io::BufReader::new)
-        .map_err(|e| e.to_string())?;
-    let keys = keyfile
-        .lines()
-        .map(|result| result.map(|ln| PublicKey::parse_pk_line(&ln)))
-        .filter_map(|result| match result {
-            Ok(Ok(ok)) => Some(Ok(ok)),
-            Ok(Err(ringsig::keys::Error::EmptyKey)) => None, // blank lines ok
-            Ok(Err(e)) => Some(Err(format!("Parsing public keys from {}: {:?}", args[1], e))), // FIXME
-            Err(e) => Some(Err(e.to_string())),
-        })
-        .collect::<Result<Vec<_>, _>>()?;
-
-    // Obtain message
-    let mut msg = vec![];
-    let mut file: Box<dyn Read> = if args[2] == "-" {
+    // Parse JSON
+    let file: Box<dyn Read> = if args[2] == "-" {
         Box::new(io::stdin())
     } else {
         Box::new(fs::File::open(&args[2]).map_err(|e| e.to_string())?)
     };
-    file.read_to_end(&mut msg).map_err(|e| e.to_string())?;
+    let mut contents: FileContents = serde_json::from_reader(file).map_err(|e| e.to_string())?;
+
+    if contents.version != 1 { return Err("JSON version was not 1".into()) }
+
+    let keys = contents
+        .pks
+        .iter()
+        .map(|ln| PublicKey::parse_pk_line(ln))
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("parsing public keys: {:?}", e))?; // FIXME
 
     // Obtain secret key for proving
     if args[1] == "prove" {
         let sk;
-        if args.len() == 5 {
-            let sk_str = fs::read_to_string(&args[4]).map_err(|e| e.to_string())?;
+        if args.len() == 4 {
+            let sk_str = fs::read_to_string(&args[3]).map_err(|e| e.to_string())?;
             sk = SecretKey::from_armor(&sk_str)
-                .map_err(|e| format!("Reading secret key file {}: {:?}", args[4], e))?; // FIXME
+                .map_err(|e| format!("Reading secret key file {}: {:?}", args[3], e))?; // FIXME
         } else {
             let mut try_sk = None;
             let mut ssh_dir = match home_dir() {
@@ -103,22 +101,17 @@ fn main() -> Result<(), String> {
             }
         }
 
-
         // Do the proof
-        let proof = ringsig::prove(&keys, &msg, sk)?;
-        println!("{}", proof.to_hex());
+        let proof = ringsig::prove(&keys, contents.message.as_bytes(), sk)?;
+        contents.proof = Some(proof.to_hex());
+        println!("{}", serde_json::to_value(&contents).expect("serializing JSON"));
     }
 
     // Obtain proof for verifying
     if args[1] == "verify" {
-        let proof = Vec::<u8>::from_hex(&args[4])
-            .map_err(|e| e.to_string())?;
-
-        // Obtain message
-        let mut msg = vec![];
-        io::stdin().read_to_end(&mut msg).map_err(|e| e.to_string())?;
-
-        ringsig::verify(&proof, &keys, &msg)?;
+        let proof = contents.proof.ok_or("missing proof in JSON")?;
+        let proof = Vec::<u8>::from_hex(&proof).map_err(|e| e.to_string())?;
+        ringsig::verify(&proof, &keys, contents.message.as_bytes())?;
     }
 
     Ok(())
