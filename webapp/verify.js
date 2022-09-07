@@ -66,16 +66,17 @@ function setVerificationStatus(color, message) {
 
 // setMessageDOM will fill out the DOM of the page with the message and the
 // authors.
-//
-// TODO: Need to make sure this is safe... can html injection happen here?
 function setMessageDOM(skylinkData) {
-  // Set the read body.
-  document.getElementById("readMessage").innerHTML = skylinkData.message
+  // Set the read body. We need to escape the html in case there are any bad
+  // characters, and then we need to replace all of the newlines with breaks so
+  // that they get rendered inside of the 'p' object.
+  document.getElementById("readMessage").innerHTML = escapeHtml(skylinkData.message).replaceAll(/\n/g, "<br />")
 
-  // Set all of the authors. Verify their keys one at a time.
+  // Add all the authors to the DOM, and kick off async verification for each.
   const authors = skylinkData.authors
   for (let i = 0; i < authors.length; i++) {
     const author = authors[i]
+    const username = escapeHtml(author.username)
 
     // Create the DOM for the avatar img.
     const avatarImg = document.createElement("img")
@@ -87,7 +88,7 @@ function setMessageDOM(skylinkData) {
     nameDiv.style = "float: right; width: calc(100% - 120px); display: flex; justify-content: center; align-content: center; flex-direction: column"
     const nameP = document.createElement("p")
     nameP.style = "font-size: 24px; padding-left: 10px"
-    nameP.innerHTML = author.username
+    nameP.innerHTML = username
     nameDiv.appendChild(nameP)
 
     // Create the DOM for the author div.
@@ -95,13 +96,13 @@ function setMessageDOM(skylinkData) {
     authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #FCD083"
     authorDiv.appendChild(avatarImg)
     authorDiv.appendChild(nameDiv)
-    authorDiv.id = ("githubAuthor"+author.username)
+    authorDiv.id = ("githubAuthor"+username)
 
     // Add the DOM for the new author.
     const authorsDiv = document.getElementById("authors")
     authorsDiv.appendChild(authorDiv)
 
-    // Kick off the verification process.
+    // Kick off the verification process for this author.
     verifyAuthor(authors[i])
   }
 }
@@ -188,6 +189,23 @@ function handleWorkerMessage(event) {
   const nonce = event.data.nonce
   activeQueries[nonce](event.data)
   delete activeQueries[nonce]
+}
+
+// escapeHtml is a helper function that will sanitize
+const entityMap = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;',
+  '`': '&#x60;',
+  '=': '&#x3D;'
+};
+function escapeHtml(string) {
+  return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+    return entityMap[s];
+  });
 }
 
 performVerification()
