@@ -191,6 +191,7 @@ async function publishMessage() {
     method: "post",
     body: JSON.stringify(postBody),
   }
+  setPublishPending()
   try {
     const response = await fetch("https://siasky.net/skynet/skyfile?filename=verify.html", fetchOpts)
     if (!(response.ok)) {
@@ -238,6 +239,25 @@ async function setPublishSuccess(message) {
     document.getElementById("publishMsg").remove()
   }
  
+  // Add the new message to the message div.
+  const publishMsgDiv = document.getElementById("publishMsgDiv")
+  publishMsgDiv.appendChild(publishMsg)
+}
+
+// setPublishPending will set the publishing div to a nice pending message.
+async function setPublishPending() {
+  // Create the new message.
+  const publishMsg = document.createElement("p")
+  publishMsg.style = "color: #00A500; padding: 0px; padding-left: 20px; padding-bottom: 20px"
+  publishMsg.id = "publishMsg"
+  publishMsg.innerHTML = "uploading..."
+
+  // Clear the current message if there is one.
+  console.log(document.getElementById("publishMsg"))
+  if (document.getElementById("publishMsg") !== null) {
+    document.getElementById("publishMsg").remove()
+  }
+
   // Add the new message to the message div.
   const publishMsgDiv = document.getElementById("publishMsgDiv")
   publishMsgDiv.appendChild(publishMsg)
