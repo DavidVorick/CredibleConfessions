@@ -3,7 +3,8 @@
   "publicKeys" : [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAyxLYuvSF14BJXejP+Qx6yLH1MXr/HGOcLZU55TodKS",
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKHQ634LrVRQ0bLDLZ5kdjcpmihQBtcJbGoMqCJh6i10",
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDdtluGSY0vvzgcdU3GTIfWtrr8KMSk8Y1i9NJfRCkV1 apoelstra@sultana"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDdtluGSY0vvzgcdU3GTIfWtrr8KMSk8Y1i9NJfRCkV1 apoelstra@sultana",
+    "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIJMjTxa8PYNncRTEuBM8v+CzmuZ1gWEwScL6jWZn2Dz6AAAABHNzaDo="
   ],
   "message" : "this is an example text"
 }

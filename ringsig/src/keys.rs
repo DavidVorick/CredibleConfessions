@@ -90,7 +90,8 @@ impl PublicKey {
         if pieces.is_empty() {
             return Err(Error::EmptyKey);
         }
-        if pieces[0] != "ssh-ed25519" {
+        // There are several allowable prefixes, all of which have ed25519 in them, according to the ssh source
+        if !pieces[0].contains("ssh-ed25519") {
             return Err(Error::WrongKeyType { expected: "ssh-ed25519".to_string(), got: pieces[0].to_string() });
         }
         if pieces.len() < 2 {

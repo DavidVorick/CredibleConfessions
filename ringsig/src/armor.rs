@@ -121,6 +121,26 @@ fn check_string(sl: &mut &[u8], target: &[u8]) -> Result<(), Error> {
     Ok(())
 }
 
+fn check_string_has_ed(sl: &mut &[u8]) -> Result<(), Error> {
+    // There are several allowable prefixes, all of which have ed25519 in them, according to the ssh source
+    let keytype_len = read_length(sl)?;
+    if sl.len() < keytype_len {
+        return Err(Error::EarlyEof);
+    }
+    let has_ed = match std::str::from_utf8(&sl[..keytype_len]) {
+        Ok(s) => s.contains("ssh-ed25519"),
+        Err(_) => false,
+    };
+    if !has_ed {
+        return Err(Error::UnexpectedData {
+            expected: b"ssh-ed25519".to_vec(),
+            got: sl[..keytype_len].to_vec(),
+        });
+    }
+    *sl = &sl[keytype_len..];
+    Ok(())
+}
+
 fn read_string32(sl: &mut &[u8]) -> Result<[u8; 32], Error> {
     let len = read_length(sl)?;
     if len != 32 {
@@ -144,7 +164,7 @@ impl FromArmor for PublicKey {
     fn from_armor(s: &str) -> Result<Self, Error> {
         let data = radix64_decode(s)?;
         let mut sl = &data[..];
-        check_string(&mut sl, b"ssh-ed25519")?; // key type
+        check_string_has_ed(&mut sl)?; // key type
         let pk = read_string32(&mut sl)?;
         PublicKey::parse(&pk).map_err(From::from)
     }
@@ -165,9 +185,9 @@ impl FromArmor for SecretKey {
         check_string_no_prefix(&mut sl, &[0, 0, 0, 1])?; // number of keys, always 1
                                                          // Public key segment
         let total_len = read_length(&mut sl)?;
-        check_string(&mut sl, b"ssh-ed25519")?; // key type
+        check_string_has_ed(&mut sl)?; // key type
         let pubkey_1 = read_string32(&mut sl)?;
-        if total_len != 51 {
+        if total_len < 51 {
             // 32 + 2*4 (lengths) + len(ssh-ed25519)
             return Err(Error::UnexpectedNumber {
                 expected: 51,
@@ -178,7 +198,7 @@ impl FromArmor for SecretKey {
         read_length(&mut sl)?; // total length, unnecessary
         read_length(&mut sl)?; // unclear what the purpose of this is
         read_length(&mut sl)?; // unclear what the purpose of this is
-        check_string(&mut sl, b"ssh-ed25519")?; // key type
+        check_string_has_ed(&mut sl)?; // key type
         let pubkey_2 = read_string32(&mut sl)?;
         if pubkey_1 != pubkey_2 {
             return Err(Error::UnexpectedData {
