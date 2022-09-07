@@ -10,7 +10,7 @@ async function performVerification() {
   const skylinkHash = window.location.hash
   const skylink = skylinkHash.substring(1)
   if (skylink.length !== 46) {
-    setVerificationStatus("#D50000", "document hash should be 46 characters")
+    setVerificationStatus("#DB8686", "document hash should be 46 characters")
     return
   }
 
@@ -18,12 +18,12 @@ async function performVerification() {
   try {
     const response = await fetch("https://web3portal.com/"+skylink)
     if (!(response.ok)) {
-      setVerificationStatus("#D50000", `Unable to download data, got response code ${response.status}`)
+      setVerificationStatus("#DB8686", `Unable to download data, got response code ${response.status}`)
       return
     }
     skylinkData = await response.json()
   } catch(err) {
-    setVerificationStatus("#D50000", `Unable to download data: ${err}`)
+    setVerificationStatus("#DB8686", `Unable to download data: ${err}`)
     return
   }
 
@@ -32,36 +32,36 @@ async function performVerification() {
 
   // Verify the skylinkData and make sure it's safe to use within the verifier.
   if (typeof skylinkData.proof !== "string") {
-    setVerificationStatus("#D50000", "data.proof is malformed")
+    setVerificationStatus("#DB8686", "data.proof is malformed")
     return
   }
   if (typeof skylinkData.message !== "string") {
-    setVerificationStatus("#D50000", "data.message is malformed")
+    setVerificationStatus("#DB8686", "data.message is malformed")
     return
   }
   if (!(Array.isArray(skylinkData.authors))) {
-    setVerificationStatus("#D50000", "data.authors is malformed")
+    setVerificationStatus("#DB8686", "data.authors is malformed")
     return
   }
   const authors = skylinkData.authors
   for (let i = 0; i < skylinkData.authors.length; i++) {
     const author = authors[i]
     if (typeof author.platform !== "string") {
-      setVerificationStatus("#D50000", "author.platform is malformed")
+      setVerificationStatus("#DB8686", "author.platform is malformed")
       return
     }
     if (author.platform !== "GitHub") {
-      setVerificationStatus("#D50000", `author.platform is not recognized: ${author.platform}`)
+      setVerificationStatus("#DB8686", `author.platform is not recognized: ${author.platform}`)
       return
     }
     if (!(Array.isArray(author.keys))) {
-      setVerificationStatus("#D50000", "author.keys is malformed")
+      setVerificationStatus("#DB8686", "author.keys is malformed")
       return
     }
     for (let j = 0; j < author.keys.length; j++) {
       const key = author.keys[j]
       if (typeof key !== "string") {
-        setVerificationStatus("#D50000", "key is malformed")
+        setVerificationStatus("#DB8686", "key is malformed")
         return
       }
     }
@@ -83,12 +83,12 @@ async function performVerification() {
   })
   const isValidProof = isValidProofResp.isValidProof
   if (isValidProof !== "") {
-    setVerificationStatus("#D50000", `Cryptographic proof is invalid: ${isValidProof}`)
+    setVerificationStatus("#DB8686", `Cryptographic proof is invalid: ${isValidProof}`)
     return
   }
 
   // Download complete, update the verification status to processing.
-  setVerificationStatus("#CCF7B7", "Proof is Valid")
+  setVerificationStatus("#79C78E", "Proof is Valid")
 
   // Enable the download button.
   document.getElementById("downloadMessage").disabled = false
@@ -157,7 +157,7 @@ async function verifyAuthor(author) {
     // Grab the author's keys from github.
     const response = await fetch(keysAPI)
     if (!(response.ok)) {
-      authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #D50000"
+      authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #DB8686"
       console.log(`got response error for author ${author.username}: ${response.status}`)
       return
     }
@@ -175,17 +175,17 @@ async function verifyAuthor(author) {
       }
       if (found === false) {
         allFound = false
-        authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #D50000"
+        authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #DB8686"
         console.log(`author key is missing from github ${author.username}: ${response.status}`)
         alert(author.keys[i])
         alert(JSON.stringify(keysObj))
       }
     }
     if (allFound === true) {
-        authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #CCF7B7"
+        authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #79C78E"
     }
   } catch(err) {
-    authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #D50000"
+    authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #DB8686"
     console.log(`got response error for author ${author.username}: ${err}`)
     return
   }
