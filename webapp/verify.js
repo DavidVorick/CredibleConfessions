@@ -16,7 +16,7 @@ async function performVerification() {
 
   // Fetch the skylink from Skynet.
   try {
-    const response = await fetch("https://siasky.net/"+skylink)
+    const response = await fetch("https://web3portal.com/"+skylink)
     if (!(response.ok)) {
       setVerificationStatus("#D50000", `Unable to download data, got response code ${response.status}`)
       return

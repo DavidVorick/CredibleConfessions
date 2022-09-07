@@ -192,7 +192,7 @@ async function publishMessage() {
   }
   setPublishPending()
   try {
-    const response = await fetch("https://siasky.net/skynet/skyfile?filename=verify.html", fetchOpts)
+    const response = await fetch("https://web3portal.com/skynet/skyfile?filename=verify.html", fetchOpts)
     if (!(response.ok)) {
       setPublishError("unable to upload skyfile: "+response.status)
       return
