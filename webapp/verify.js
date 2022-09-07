@@ -29,15 +29,48 @@ async function performVerification() {
   // Download complete, update the verification status to processing.
   setVerificationStatus("#FCD083", "Processing")
 
-  // TODO: Need to verify the skylinkData to make sure it's well formed and
-  // won't harm the app.
+  // Verify the skylinkData and make sure it's safe to use within the verifier.
+  if (typeof skylinkData.proof !== "string") {
+    setVerificationStatus("#D50000", "data.proof is malformed")
+    return
+  }
+  if (typeof skylinkData.message !== "string") {
+    setVerificationStatus("#D50000", "data.message is malformed")
+    return
+  }
+  if (!(Array.isArray(skylinkData.authors))) {
+    setVerificationStatus("#D50000", "data.authors is malformed")
+    return
+  }
+  const authors = skylinkData.authors
+  for (let i = 0; i < skylinkData.authors.length; i++) {
+    const author = authors[i]
+    if (typeof author.platform !== "string") {
+      setVerificationStatus("#D50000", "author.platform is malformed")
+      return
+    }
+    if (author.platform !== "GitHub") {
+      setVerificationStatus("#D50000", `author.platform is not recognized: ${author.platform}`)
+      return
+    }
+    if (!(Array.isArray(author.keys))) {
+      setVerificationStatus("#D50000", "author.keys is malformed")
+      return
+    }
+    for (let j = 0; j < author.keys.length; j++) {
+      const key = author.keys[j]
+      if (typeof key !== "string") {
+        setVerificationStatus("#D50000", "key is malformed")
+        return
+      }
+    }
+  }
 
   // Set the message DOM so the user has something to look at.
   setMessageDOM(skylinkData)
 
   // Check that the signature is valid.
   let publicKeys = []
-  const authors = skylinkData.authors
   for (let i = 0; i < authors.length; i++) {
     publicKeys.push(...authors[i].keys)
   }
@@ -49,7 +82,7 @@ async function performVerification() {
   })
   const isValidProof = isValidProofResp.isValidProof
   if (isValidProof !== "") {
-    setVerificationStatus("D50000", `Cryptographic proof is invalid: ${isValidProof}`)
+    setVerificationStatus("#D50000", `Cryptographic proof is invalid: ${isValidProof}`)
     return
   }
 
@@ -80,7 +113,7 @@ function setMessageDOM(skylinkData) {
 
     // Create the DOM for the avatar img.
     const avatarImg = document.createElement("img")
-    avatarImg.src = author.avatarURL
+    avatarImg.src = `https://github.com/${username}.png`
     avatarImg.style = "float: left; margin: 10px; height: 100px; width: 100px"
 
     // Create the DOM for the author text.

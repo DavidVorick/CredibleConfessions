@@ -44,7 +44,6 @@ async function addAuthor() {
   const newAuthor = {
     platform: "GitHub",
     username,
-    avatarURL,
   }
 
   // Check if this author was already added. We check before the network
