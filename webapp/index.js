@@ -264,6 +264,37 @@ async function setPublishPending() {
   publishMsgDiv.appendChild(publishMsg)
 }
 
+// getSigningData will start a download for a file that contains all of the
+// information necessary for the CLI tool to produce a valid proof for this
+// message and set of authors.
+async function getSigningData() {
+  // Get all relevant information for the proof.
+  const message = document.getElementById("message").value
+  const publicKeys = []
+  for (let i = 0; i < authors.length; i++) {
+    const authorKeys = authors[i].keys
+    for (let j = 0; j < authorKeys.length; j++) {
+      publicKeys.push(authorKeys[j])
+    }
+  }
+
+  // Create the signing data object.
+  const signingData = JSON.stringify({
+    publicKeys,
+    message,
+  })
+  const signingURL = URL.createObjectURL(new Blob([signingData]))
+
+  // Create a DOM element to trigger a download of the file.
+  let element = document.createElement("a")
+  element.href = signingURL
+  element.download = "messageAndKeys.json"
+  element.style.display = "none"
+  document.body.appendChild(element)
+  element.click()
+  document.body.removeChild(element)
+}
+
 // Establish the promise that will launch the webworker. We launch the worker
 // in a promise so that there's minimal delay when starting the app. When we
 // want to use the worker in a function, we need to grab it from the promise.

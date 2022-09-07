@@ -2,6 +2,8 @@
 // the skylink of the document from the fragment, and then loads it into the
 // text and verifier.
 
+let skylinkData
+
 // performVerification will fetch the provided confession and verify it.
 async function performVerification() {
   // First step is to look at the fragment and fetch the data from Skynet.
@@ -13,7 +15,6 @@ async function performVerification() {
   }
 
   // Fetch the skylink from Skynet.
-  let skylinkData
   try {
     const response = await fetch("https://siasky.net/"+skylink)
     if (!(response.ok)) {
@@ -88,6 +89,9 @@ async function performVerification() {
 
   // Download complete, update the verification status to processing.
   setVerificationStatus("#00A500", "Proof is Valid")
+
+  // Enable the download button.
+  document.getElementById("downloadMessage").disabled = false
 }
 
 // setVerificationStatus will change the color and message of the verification
@@ -185,6 +189,20 @@ async function verifyAuthor(author) {
     console.log(`got response error for author ${author.username}: ${err}`)
     return
   }
+}
+
+// downloadVerifiedMessage will start a download that allows the user to
+// download the proof for the blog post they are reading.
+async function downloadVerifiedMessage() {
+  let message = JSON.stringify(skylinkData)
+  let url = URL.createObjectURL(new Blob([message]))
+  let element = document.createElement("a")
+  element.href = url
+  element.download = "verifiedMessage.json"
+  element.style.display = "none"
+  document.body.appendChild(element)
+  element.click()
+  document.body.removeChild(element)
 }
 
 // Establish the promise that will launch the webworker. We launch the worker
