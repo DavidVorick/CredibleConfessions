@@ -111,4 +111,9 @@ pub fn is_proof(data: &str) -> bool {
     data.len() % 32 == 0 && Vec::<u8>::from_hex(data).is_ok()
 }
 
+#[wasm_bindgen]
+pub fn is_acceptable_pubkey(data: &str) -> bool {
+   // checks that the key is parseable *and* that it's in the prime group
+   PublicKey::parse_pk_line(data).is_ok()
+}
 

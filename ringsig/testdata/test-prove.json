@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "publicKeys" : [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAyxLYuvSF14BJXejP+Qx6yLH1MXr/HGOcLZU55TodKS",
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKHQ634LrVRQ0bLDLZ5kdjcpmihQBtcJbGoMqCJh6i10",
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDdtluGSY0vvzgcdU3GTIfWtrr8KMSk8Y1i9NJfRCkV1 apoelstra@sultana"
+  ],
+  "message" : "this is an example text"
+}
+
