@@ -80,10 +80,13 @@ pub fn prove(pks: &[PublicKey], message: &[u8], sk: SecretKey) -> Result<Vec<u8>
         None => return Err("secret key did not match any public key"),
     };
     let mut ret = vec![0; 32 * (pks.len() + 1)];
+    let mut rng = [0; 32];
 
     let mut nonce_eng = NonceHash::engine();
     nonce_eng.input(&params[..]);
     nonce_eng.input(sk.as_bytes());
+    getrandom::getrandom(&mut rng).map_err(|_| "rng error")?;
+    nonce_eng.input(&rng);
     let nonce = NonceHash::from_engine(nonce_eng);
 
     // Compute all the `s` values for indices greater than our own.
@@ -109,6 +112,8 @@ pub fn prove(pks: &[PublicKey], message: &[u8], sk: SecretKey) -> Result<Vec<u8>
         s_eng.input(&(idx as u64).to_be_bytes());
         s_eng.input(&params[..]);
         s_eng.input(sk.as_bytes());
+        getrandom::getrandom(&mut rng).map_err(|_| "rng error")?;
+        s_eng.input(&rng);
         let s_i = NonceHash::from_engine(s_eng);
         ret[32 * (1 + idx)..32 * (2 + idx)].copy_from_slice(&s_i[..]);
         // Compute next R value as though we were a verifier
