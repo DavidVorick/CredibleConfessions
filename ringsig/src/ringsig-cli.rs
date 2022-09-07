@@ -112,6 +112,12 @@ fn main() -> Result<(), String> {
         let proof = contents.proof.ok_or("missing proof in JSON")?;
         let proof = Vec::<u8>::from_hex(&proof).map_err(|e| e.to_string())?;
         ringsig::verify(&proof, &keys, contents.message.as_bytes())?;
+        println!("{}", contents.message);
+        println!("-----END OF MESSAGE-----");
+        println!("SUCCESSFULLY VERIFIED PROOF with one of");
+        for key in &contents.pks {
+            println!("{}", key);
+        }
     }
 
     Ok(())
