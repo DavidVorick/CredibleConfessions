@@ -1,6 +1,6 @@
 // Import the wasm stuff and bind it.
 importScripts("./pkg/ringsig.js");
-const {prove, is_secret_key, verify} = wasm_bindgen;
+const {prove, is_acceptable_pubkey, is_secret_key, verify} = wasm_bindgen;
 
 // init returns a promise that resolves when the wasm bindings have completed.
 async function init() {
@@ -37,6 +37,16 @@ onmessage = async function(event) {
     const isValidProof = verify(event.data.proof, event.data.publicKeys, event.data.message)
     postMessage({
       isValidProof,
+      nonce: event.data.nonce,
+    })
+    return
+  }
+
+  // Check whether the caller wants to verify a pubkey.
+  if (event.data.method === "isAcceptablePubkey") {
+    const isAcceptablePubkey = is_acceptable_pubkey(event.data.pubkey)
+    postMessage({
+      isAcceptablePubkey,
       nonce: event.data.nonce,
     })
     return

@@ -11,10 +11,11 @@ ability to tell which person is the real author. Furthermore, none of the
 potential authors have any ability to prove that it wasn't them, nor do they
 have any ability to opt-out of being assigned as a potential author.
 
-This is useful for leaking secrets or spreading gossip. For example, an execute
-at a large company could write an article that exposes the misdeeds of a
-corporation. They can use credible confessions to establish that the article
-comes from a respected executive, without having to reveal their full identity.
+This is useful for leaking secrets or spreading gossip. For example, an
+executive at a large company could write an article that exposes the misdeeds
+of a corporation. They can use credible confessions to establish that the
+article comes from a respected executive, without having to reveal their full
+identity.
 
 ## Verifying a Credible Confession
 

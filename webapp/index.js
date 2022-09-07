@@ -63,13 +63,11 @@ async function addAuthor() {
     const keysObj = await response.json()
     const keys = []
     for (let i = 0; i < keysObj.length; i++) {
-      if (typeof keysObj[i].key !== "string") {
-        continue
-      }
-      if (!(keysObj[i].key.startsWith("ssh-ed25519 "))) {
-        continue
-      }
-      if (keysObj[i].key.length !== 80) {
+      const resp = await postWorkerMessage({
+        method: "isAcceptablePubkey",
+        pubkey: keysObj[i].key,
+      })
+      if (!(resp.isAcceptablePubkey)) {
         continue
       }
       keys.push(keysObj[i].key)
