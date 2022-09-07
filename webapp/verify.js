@@ -88,7 +88,7 @@ async function performVerification() {
   }
 
   // Download complete, update the verification status to processing.
-  setVerificationStatus("#00A500", "Proof is Valid")
+  setVerificationStatus("#CCF7B7", "Proof is Valid")
 
   // Enable the download button.
   document.getElementById("downloadMessage").disabled = false
@@ -182,7 +182,7 @@ async function verifyAuthor(author) {
       }
     }
     if (allFound === true) {
-        authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #00A500"
+        authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #CCF7B7"
     }
   } catch(err) {
     authorDiv.style = "width: 100%; display: flex; border-bottom: thin solid #000000; background: #D50000"
