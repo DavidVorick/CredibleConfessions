@@ -1,0 +1,62 @@
+<html>
+
+<!-- Generic metadata and stylesheet -->
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="style.css">
+  <title>Read a Credible Confession</title>
+</head>
+
+<!-- Overall structure for the app -->
+<body style="width: 100%">
+  <!-- Define the header div -->
+  <div style="background: #CCCCCC; width: 100%">
+    <center>
+      <p style="padding-top: 20px; font-size: 32px">Read a Credible Confession</p>
+      <p style="padding-bottom: 20px; padding-top: 20px"><a href="https://google.com">(how it works)</a></p>
+    </center>
+  </div>
+
+  <!-- Define the verification status div -->
+  <div id="verificationStatusDiv" style="background: #FCD083; width: 100%">
+    <center>
+      <p id="verificationStatusP" style="padding: 20px; font-size: 20px">Verification Status: Downloading</p>
+    </center>
+  </div>
+
+  <!-- Define the body div -->
+  <div style="width: 100%; display: flex">
+    <!-- Define the authors div -->
+    <div style="width: 360px; float: left; background: #CCDDCC">
+      <!-- Define the author title div -->
+      <div style="width: 100%; border-bottom: thin solid #000000">
+        <center>
+          <p style="font-size: 24px; margin: 20px">Authors</p>
+        </center>
+      </div>
+      <!-- Define the div that holds the authors -->
+      <div id="authors" style="width: 100%">
+      </div>
+    </div>
+
+    <!-- Define the reading div -->
+    <div style="width: calc(100% - 360px); float: right; background: #DDCCCC">
+      <!-- Define the main text div -->
+      <div style="width: 100%">
+        <p id="readMessage" style="margin: 30px"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Define the footer div -->
+  <div style="width: 100%; background: #CCCCDD">
+    <center>
+      <p style="padding: 20px">Socials</p>
+    </center>
+  </div>
+
+  <!-- Pull in the verification script -->
+  <script src="./verify.js"></script>
+</body>
+
+</html>

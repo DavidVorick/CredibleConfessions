@@ -1,6 +1,9 @@
 // Establish a global array with the full list of authors.
 const authors = []
 
+// TODO: Add some sort of indicator that the document is publishing after
+// clicking the publish button.
+
 // TODO: Add a delete function for authors
 
 // TODO: save the authors instead of just the message
@@ -175,17 +178,70 @@ async function publishMessage() {
   })
   const isValidProof = isValidProofResp.isValidProof
   if (isValidProof !== "") {
-    console.log(isValidProof)
     setPublishError(`proof is not valid: ${isValidProof}`)
     return
   }
 
-  setPublishError("")
+  // Upload the resulting message, keys, and proof to Skynet.
+  const postBody = {
+    authors,
+    message,
+    proof,
+  }
+  const fetchOpts = {
+    method: "post",
+    body: JSON.stringify(postBody),
+  }
+  try {
+    const response = await fetch("https://siasky.net/skynet/skyfile?filename=verify.html", fetchOpts)
+    if (!(response.ok)) {
+      setPublishError("unable to upload skyfile: "+response.status)
+      return
+    }
+
+    const uploadResult = await response.json()
+    setPublishSuccess("https://"+window.location.host+"/verify.html#"+uploadResult.skylink)
+  } catch(err) {
+    setPublishError("unable to upload skyfile: "+err)
+  }
 }
 
 // Define a helper function to set the publish error.
 async function setPublishError(message) {
-  document.getElementById("publishError").innerHTML = message
+  // Create the new message.
+  const publishMsg = document.createElement("p")
+  publishMsg.style = "color: #D50000; padding: 0px; padding-left: 20px; padding-bottom: 20px"
+  publishMsg.id = "publishMsg"
+  publishMsg.innerHTML = message
+
+  // Clear the current message if there is one.
+  console.log(document.getElementById("publishMsg"))
+  if (document.getElementById("publishMsg") !== null) {
+    document.getElementById("publishMsg").remove()
+  }
+ 
+  // Add the new message to the message div.
+  const publishMsgDiv = document.getElementById("publishMsgDiv")
+  publishMsgDiv.appendChild(publishMsg)
+}
+
+// setPublishSuccess will change the publish message to a success message.
+async function setPublishSuccess(message) {
+  // Create the new message.
+  const publishMsg = document.createElement("p")
+  publishMsg.style = "color: #00A500; padding: 0px; padding-left: 20px; padding-bottom: 20px"
+  publishMsg.id = "publishMsg"
+  publishMsg.innerHTML = message
+
+  // Clear the current message if there is one.
+  console.log(document.getElementById("publishMsg"))
+  if (document.getElementById("publishMsg") !== null) {
+    document.getElementById("publishMsg").remove()
+  }
+ 
+  // Add the new message to the message div.
+  const publishMsgDiv = document.getElementById("publishMsgDiv")
+  publishMsgDiv.appendChild(publishMsg)
 }
 
 // Establish the promise that will launch the webworker. We launch the worker
