@@ -186,6 +186,7 @@ async function publishMessage() {
     authors,
     message,
     proof,
+    version: "1", // intentionally a string, for more flexibility in the future.
   }
   const fetchOpts = {
     method: "post",

@@ -8,7 +8,7 @@ name = "ringsig"
 path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
-[[target.'cfg(not(target_arch = "wasm32"))'.bin]]
+[[bin]]
 name = "ringsig-cli"
 path = "src/ringsig-cli.rs"
 
