@@ -21,6 +21,8 @@ use curve25519_dalek::{
     scalar::Scalar,
 };
 
+use subtle::{ConstantTimeEq, Choice};
+
 /// Key-related error
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum Error {
@@ -102,6 +104,12 @@ impl PublicKey {
             Err(crate::armor::Error::Key(err)) => Err(err),
             Err(other) => Err(Error::Armor(format!("{:?}", other))), // FIXME do not use debug output here
         }
+    }
+}
+
+impl ConstantTimeEq for PublicKey {
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.0.ct_eq(&other.0)
     }
 }
 

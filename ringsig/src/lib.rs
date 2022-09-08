@@ -26,6 +26,8 @@ use curve25519_dalek::{constants, edwards::EdwardsPoint, scalar::Scalar};
 use crate::hashes::{ChallengeHash, NonceHash, ParamsHash};
 use crate::keys::{PublicKey, SecretKey};
 
+use subtle::{ConstantTimeEq, CtOption};
+
 fn param_hash(pks: &[PublicKey], message: &[u8]) -> ParamsHash {
     let mut eng = ParamsHash::engine();
     eng.input(&(u32::try_from(pks.len()).unwrap().to_le_bytes()));
@@ -75,10 +77,16 @@ pub fn prove(pks: &[PublicKey], message: &[u8], sk: SecretKey) -> Result<Vec<u8>
     pks.sort_by_key(|pk| pk.serialize());
     let params = param_hash(&pks, message);
     let my_pk = sk.to_public();
-    let my_idx = match pks.iter().position(|&pk| pk == my_pk) {
+    let mut my_idx_opt = CtOption::new(0 as u64, ! my_pk.ct_eq(&my_pk));
+    for (i, pk) in pks.iter().enumerate() {
+        my_idx_opt = my_idx_opt.or_else(| | CtOption::new(i as u64, pk.ct_eq(&my_pk)) );
+    }
+    let my_idx_u64 = match Option::<u64>::from(my_idx_opt) {
         Some(idx) => idx,
         None => return Err("secret key did not match any public key"),
     };
+    let my_idx = my_idx_u64 as usize;
+
     let mut ret = vec![0; 32 * (pks.len() + 1)];
     let mut rng = [0; 32];
 
