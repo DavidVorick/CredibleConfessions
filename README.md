@@ -85,12 +85,22 @@ produced.
 
 ## Future Work
 
-The authors of this software are working on an update that will transition from
-using AOS signatures to using bulletproofs. The use of bulletproofs will allow
-us to mix many different types of public keys into a single signature.
-Ambitiously, we could produce ring signatures that contain ed25519 keys, RSA
-keys, and ECDSA keys all in the same ring. There is no ETA for this update
-currently.
+The authors of this software are working on two parallel cryptographic
+improvements. The first will add support for AOS signatures over multiple
+elliptic curves at the same time. This will expand the set of authors that could
+be included in a ring, for example allowing cryptocurrency public keys to be
+included in rings.
+
+The second will allow proving the validity of a EdDSA signature in zero
+knowledge. Along with a proof of membership of the public key in the ring, this
+will support much larger ring to proof size ratios and will allow users to use
+existing software or hardware to generate the signature.
+
+Eventually, the authors plan to unify these feature sets to support zero
+knowledge proofs of signature validity for multiple signature protocols in a
+single proof. Ambitiously, we could produce ring signatures that contain ed25519
+keys, RSA keys, and ECDSA keys all in the same ring. There is no ETA for this
+update currently.
 
 The current software only supports using ssh keys for signing. An easy first
 extension would be to support other forms of ed25519 keys as well. Pull
